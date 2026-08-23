@@ -1,0 +1,208 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+{% block breadcrumb %}{{ product.name }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div>
+    <h4 class="mb-0">{{ product.name }}</h4>
+    <span class="text-muted">SKU: <code>{{ product.sku }}</code></span>
+    {% if product.is_active %}<span class="badge bg-success ms-2">Active</span>{% else %}<span class="badge bg-danger ms-2">Inactive</span>{% endif %}
+  </div>
+  <div class="d-flex gap-2">
+    {% if request.user.is_administrator or request.user.is_inventory_incharge or request.user.is_superuser %}
+    <a href="{% url 'inventory:product_edit' product.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+    {% endif %}
+    <a href="{% url 'inventory:product_barcode_print' product.pk %}" class="btn btn-outline-dark"><i class="bi bi-upc-scan"></i> Print Barcode</a>
+    <a href="{% url 'inventory:product_list' %}" class="btn btn-outline-secondary">Back to List</a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xl-4">
+
+    <!-- Images -->
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Images</h5>
+        <div class="row g-2">
+          {% for image in product.images.all %}
+          <div class="col-6">
+            <div class="position-relative">
+              <img src="{{ image.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+              {% if image.is_primary %}<span class="badge bg-primary position-absolute top-0 start-0 m-1">Primary</span>{% endif %}
+            </div>
+            {% if request.user.is_administrator or request.user.is_inventory_incharge or request.user.is_superuser %}
+            <div class="d-flex gap-1 mt-1">
+              {% if not image.is_primary %}
+              <form method="post" action="{% url 'inventory:product_image_set_primary' product.pk image.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-primary" title="Set as primary"><i class="bi bi-star"></i></button>
+              </form>
+              {% endif %}
+              <form method="post" action="{% url 'inventory:product_image_delete' product.pk image.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          {% empty %}
+          <div class="col-12 text-muted small">No images uploaded yet.</div>
+          {% endfor %}
+        </div>
+
+        {% if request.user.is_administrator or request.user.is_inventory_incharge or request.user.is_superuser %}
+        <form method="post" action="{% url 'inventory:product_image_upload' product.pk %}" enctype="multipart/form-data" class="mt-3">
+          {% csrf_token %}
+          {{ image_form.image }}
+          <div class="form-check mt-2">
+            {{ image_form.is_primary }}
+            <label class="form-check-label">Set as primary</label>
+          </div>
+          <button type="submit" class="btn btn-sm btn-primary mt-2"><i class="bi bi-upload"></i> Upload Image</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Barcode -->
+    <div class="card">
+      <div class="card-body text-center">
+        <h5 class="card-title text-start">Barcode</h5>
+        <img src="{% url 'inventory:product_barcode_image' product.pk %}" alt="Barcode" class="img-fluid">
+        <div class="mt-2">
+          <a href="{% url 'inventory:product_barcode_print' product.pk %}" class="btn btn-sm btn-outline-dark">Print Labels</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="col-xl-8">
+
+    <div class="card">
+      <div class="card-body">
+        <ul class="nav nav-tabs nav-tabs-bordered">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#d-overview">Overview</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#d-identifiers">Identifiers</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#d-physical">Physical</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#d-compat">Compatibility</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#d-specs">Specifications</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#d-pricing">Pricing</button></li>
+        </ul>
+
+        <div class="tab-content pt-3">
+
+          <div class="tab-pane fade show active" id="d-overview">
+            <div class="row mb-2"><div class="col-lg-3 fw-bold text-muted">Category</div><div class="col-lg-9">{{ product.category.name }}</div></div>
+            <div class="row mb-2"><div class="col-lg-3 fw-bold text-muted">Brand</div><div class="col-lg-9">{{ product.brand.name|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-3 fw-bold text-muted">Manufacturer</div><div class="col-lg-9">{{ product.manufacturer.name|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-3 fw-bold text-muted">Made By</div><div class="col-lg-9">{{ product.made_by|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-3 fw-bold text-muted">Country of Origin</div><div class="col-lg-9">{{ product.country_of_origin|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-3 fw-bold text-muted">Short Description</div><div class="col-lg-9">{{ product.short_description|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-3 fw-bold text-muted">Description</div><div class="col-lg-9">{{ product.description|linebreaksbr|default:"—" }}</div></div>
+          </div>
+
+          <div class="tab-pane fade" id="d-identifiers">
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">SKU</div><div class="col-lg-8"><code>{{ product.sku }}</code></div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Barcode Number</div><div class="col-lg-8">{{ product.barcode_number|default:"(uses SKU)" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Model Number</div><div class="col-lg-8">{{ product.model_number|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Part Number</div><div class="col-lg-8">{{ product.part_number|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">OEM Number</div><div class="col-lg-8">{{ product.oem_number|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Alternate Part Number</div><div class="col-lg-8">{{ product.alternate_part_number|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Supplier Part Number</div><div class="col-lg-8">{{ product.supplier_part_number|default:"—" }}</div></div>
+          </div>
+
+          <div class="tab-pane fade" id="d-physical">
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Color</div><div class="col-lg-8">{{ product.color|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Material</div><div class="col-lg-8">{{ product.material|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Finish</div><div class="col-lg-8">{{ product.finish|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Size</div><div class="col-lg-8">{{ product.size|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Dimensions (L×W×H)</div><div class="col-lg-8">{{ product.length|default:"—" }} × {{ product.width|default:"—" }} × {{ product.height|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Diameter / Thickness</div><div class="col-lg-8">{{ product.diameter|default:"—" }} / {{ product.thickness|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Weight</div><div class="col-lg-8">{{ product.weight|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Unit of Measurement</div><div class="col-lg-8">{{ product.get_unit_of_measurement_display }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Packaging</div><div class="col-lg-8">{{ product.packaging_type|default:"—" }} {% if product.quantity_per_package %}({{ product.quantity_per_package }} per package){% endif %}</div></div>
+          </div>
+
+          <div class="tab-pane fade" id="d-compat">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead><tr><th>Type</th><th>Brand</th><th>Model</th><th>Years</th><th>Engine</th><th>Fuel</th><th>Transmission</th><th>Drive</th></tr></thead>
+                <tbody>
+                  {% for c in product.compatibilities.all %}
+                  <tr>
+                    <td>{{ c.get_vehicle_type_display }}</td>
+                    <td>{{ c.vehicle_brand }}</td>
+                    <td>{{ c.vehicle_model }}</td>
+                    <td>{{ c.year_from|default:"" }}{% if c.year_to %} - {{ c.year_to }}{% endif %}</td>
+                    <td>{{ c.engine_code }}</td>
+                    <td>{{ c.get_fuel_type_display }}</td>
+                    <td>{{ c.get_transmission_type_display }}</td>
+                    <td>{{ c.get_drive_type_display }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr><td colspan="8" class="text-center text-muted py-3">No compatibility records added.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="d-specs">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+                <tbody>
+                  {% for av in product.attribute_values.all %}
+                  <tr><td>{{ av.attribute.name }}</td><td>{{ av.value }} {{ av.attribute.unit }}</td></tr>
+                  {% empty %}
+                  <tr><td colspan="2" class="text-center text-muted py-3">No specifications added.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="d-pricing">
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Cost Price</div><div class="col-lg-8">{{ product.cost_price }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Wholesale Price</div><div class="col-lg-8">{{ product.wholesale_price|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Retail Price</div><div class="col-lg-8">{{ product.retail_price|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Suggested Retail Price</div><div class="col-lg-8">{{ product.suggested_retail_price|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Selling Price</div><div class="col-lg-8">{{ product.selling_price }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Discounted Price</div><div class="col-lg-8">{{ product.discounted_price|default:"—" }}</div></div>
+            <div class="row mb-2"><div class="col-lg-4 fw-bold text-muted">Minimum Selling Price</div><div class="col-lg-8">{{ product.minimum_selling_price|default:"—" }}</div></div>
+            <div class="row mb-3"><div class="col-lg-4 fw-bold text-muted">Reorder Level</div><div class="col-lg-8">{{ product.reorder_level }}</div></div>
+
+            <h6>Price Change History</h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead><tr><th>Field</th><th>Old</th><th>New</th><th>Changed By</th><th>Date</th></tr></thead>
+                <tbody>
+                  {% for h in product.price_history.all %}
+                  <tr>
+                    <td>{{ h.field_name }}</td>
+                    <td>{{ h.old_price|default:"—" }}</td>
+                    <td>{{ h.new_price }}</td>
+                    <td>{{ h.changed_by|default:"—" }}</td>
+                    <td>{{ h.changed_at|date:"M j, Y g:i A" }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr><td colspan="5" class="text-center text-muted py-3">No price changes recorded.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

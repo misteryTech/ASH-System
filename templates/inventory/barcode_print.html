@@ -1,0 +1,48 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Barcode Labels</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 16px; background: #f4f4f4; }
+    .toolbar { margin-bottom: 16px; }
+    .toolbar button { padding: 8px 16px; font-size: 14px; cursor: pointer; }
+    .label-sheet { display: flex; flex-wrap: wrap; gap: 8px; }
+    .label {
+      width: 260px;
+      border: 1px solid #999;
+      border-radius: 4px;
+      padding: 8px;
+      background: #fff;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+    .label .name { font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+    .label .meta { font-size: 11px; color: #333; }
+    .label img { max-width: 100%; margin: 4px 0; }
+    .label .price { font-size: 14px; font-weight: bold; }
+    @media print {
+      .toolbar { display: none; }
+      body { background: #fff; padding: 0; }
+      .label { border: 1px dashed #666; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button onclick="window.print()">Print Labels</button>
+  </div>
+  <div class="label-sheet">
+    {% for product in labels %}
+    <div class="label">
+      <div class="name">{{ product.name }}</div>
+      <div class="meta">SKU: {{ product.sku }}{% if product.brand %} · {{ product.brand.name }}{% endif %}{% if product.size %} · {{ product.size }}{% endif %}</div>
+      <img src="{% url 'inventory:product_barcode_image' product.pk %}" alt="Barcode">
+      <div class="price">{{ product.selling_price }}</div>
+    </div>
+    {% empty %}
+    <p>No labels to print.</p>
+    {% endfor %}
+  </div>
+</body>
+</html>

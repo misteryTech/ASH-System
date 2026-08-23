@@ -1,0 +1,167 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Administrator Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="alert alert-primary">
+      Welcome back, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>. Here is a summary of your system users.
+    </div>
+  </div>
+</div>
+
+<div class="row">
+
+  <div class="col-xxl-4 col-md-6">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Total Users</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10">
+            <i class="bi bi-people text-primary" style="font-size: 1.8rem;"></i>
+          </div>
+          <div class="ps-3">
+            <h6>{{ total_users }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-4 col-md-6">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Active Users</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success bg-opacity-10">
+            <i class="bi bi-person-check text-success" style="font-size: 1.8rem;"></i>
+          </div>
+          <div class="ps-3">
+            <h6>{{ active_users }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-4 col-md-6">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Inactive Users</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-danger bg-opacity-10">
+            <i class="bi bi-person-x text-danger" style="font-size: 1.8rem;"></i>
+          </div>
+          <div class="ps-3">
+            <h6>{{ inactive_users }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="row">
+
+  <div class="col-xxl-3 col-md-6">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Administrators</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-info bg-opacity-10">
+            <i class="bi bi-shield-lock text-info" style="font-size: 1.5rem;"></i>
+          </div>
+          <div class="ps-3">
+            <h6>{{ total_admins }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-3 col-md-6">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Owners</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning bg-opacity-10">
+            <i class="bi bi-briefcase text-warning" style="font-size: 1.5rem;"></i>
+          </div>
+          <div class="ps-3">
+            <h6>{{ total_owners }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-3 col-md-6">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Inventory In-Charge</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10">
+            <i class="bi bi-box-seam text-primary" style="font-size: 1.5rem;"></i>
+          </div>
+          <div class="ps-3">
+            <h6>{{ total_inventory }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-3 col-md-6">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Cashiers</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success bg-opacity-10">
+            <i class="bi bi-cash-coin text-success" style="font-size: 1.5rem;"></i>
+          </div>
+          <div class="ps-3">
+            <h6>{{ total_cashiers }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-3 col-md-6">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Accounting In-Charge</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-danger bg-opacity-10">
+            <i class="bi bi-calculator text-danger" style="font-size: 1.5rem;"></i>
+          </div>
+          <div class="ps-3">
+            <h6>{{ total_accounting }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Quick Actions</h5>
+        <a href="{% url 'accounts:user_list' %}" class="btn btn-primary">
+          <i class="bi bi-people"></i> Manage Users
+        </a>
+        <a href="{% url 'accounts:user_create' %}" class="btn btn-outline-primary">
+          <i class="bi bi-person-plus"></i> Create New User
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

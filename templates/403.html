@@ -1,0 +1,14 @@
+{% extends 'base/base_front.html' %}
+{% load static %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section class="section error-404 min-vh-100 d-flex flex-column align-items-center justify-content-center">
+    <h1>403</h1>
+    <h2>You do not have permission to access this page.</h2>
+    <a class="btn btn-primary mt-3" href="{% url 'dashboard:index' %}">Back to Dashboard</a>
+  </section>
+</div>
+{% endblock %}

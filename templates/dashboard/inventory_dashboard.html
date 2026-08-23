@@ -1,0 +1,25 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Inventory Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="alert alert-primary">
+      Welcome back, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>. This is your inventory dashboard.
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-box-seam"></i> Inventory Module</h5>
+        <p class="text-muted mb-0">Product and stock management will be available in Phase 2.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

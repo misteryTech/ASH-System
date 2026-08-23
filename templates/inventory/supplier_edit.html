@@ -1,0 +1,55 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Edit Supplier{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+{% block breadcrumb %}Edit Supplier{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-7">
+    <div class="card">
+      <div class="card-body pt-4">
+        <h5 class="card-title">Edit Supplier: {{ object.name }}</h5>
+        <form method="post" class="row g-3">
+          {% csrf_token %}
+          <div class="col-md-6">
+            <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+            {{ form.name }}
+            {% for error in form.name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label for="{{ form.contact_person.id_for_label }}" class="form-label">Contact Person</label>
+            {{ form.contact_person }}
+          </div>
+          <div class="col-md-6">
+            <label for="{{ form.contact_number.id_for_label }}" class="form-label">Contact Number</label>
+            {{ form.contact_number }}
+          </div>
+          <div class="col-md-6">
+            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+          <div class="col-12">
+            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+            {{ form.address }}
+          </div>
+          <div class="col-md-6">
+            <label for="{{ form.tax_information.id_for_label }}" class="form-label">Tax Information</label>
+            {{ form.tax_information }}
+          </div>
+          <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check">
+              {{ form.is_active }}
+              <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+            </div>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'inventory:supplier_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

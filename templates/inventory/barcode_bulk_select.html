@@ -1,0 +1,44 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Bulk Barcode Printing{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+{% block breadcrumb %}Bulk Barcode Printing{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Select Products and Quantities</h5>
+    <p class="text-muted small">Enter how many labels to print for each product, then click Print Selected.</p>
+
+    <form method="get" class="row g-2 mb-3">
+      <div class="col-md-4">
+        <input type="text" name="q" class="form-control" placeholder="Search name or SKU" value="{{ query }}">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Search</button>
+      </div>
+    </form>
+
+    <form method="post" action="{% url 'inventory:barcode_bulk_print' %}" target="_blank">
+      {% csrf_token %}
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead><tr><th>Product</th><th>SKU</th><th style="width: 140px;">Quantity</th></tr></thead>
+          <tbody>
+            {% for product in products %}
+            <tr>
+              <td>{{ product.name }}</td>
+              <td><code>{{ product.sku }}</code></td>
+              <td><input type="number" name="qty_{{ product.pk }}" min="0" max="200" value="0" class="form-control form-control-sm"></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-4">No products found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-upc-scan"></i> Print Selected</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

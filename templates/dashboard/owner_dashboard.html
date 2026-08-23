@@ -1,0 +1,41 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Owner Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="alert alert-primary">
+      Welcome back, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>. This is your business overview.
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Sales Overview</h5>
+        <p class="text-muted mb-0">Sales reporting will be available once the POS module (Phase 3) is implemented.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Inventory Overview</h5>
+        <p class="text-muted mb-0">Inventory reporting will be available once the Inventory module (Phase 2) is implemented.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Accounting Overview</h5>
+        <p class="text-muted mb-0">Financial reporting will be available once the Accounting module (Phase 4) is implemented.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

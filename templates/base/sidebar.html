@@ -1,0 +1,130 @@
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar">
+
+  <ul class="sidebar-nav" id="sidebar-nav">
+
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.view_name == 'dashboard:index' %}{% else %}collapsed{% endif %}" href="{% url 'dashboard:index' %}">
+        <i class="bi bi-grid"></i>
+        <span>Dashboard</span>
+      </a>
+    </li><!-- End Dashboard Nav -->
+
+    {% if request.user.is_administrator or request.user.is_superuser %}
+    <li class="nav-heading">Administration</li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.view_name == 'accounts:user_list' %}{% else %}collapsed{% endif %}" href="{% url 'accounts:user_list' %}">
+        <i class="bi bi-people"></i>
+        <span>User Management</span>
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.is_administrator or request.user.is_inventory_incharge or request.user.is_superuser %}
+    <li class="nav-heading">Inventory</li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'inventory:product_list' %}">
+        <i class="bi bi-box-seam"></i>
+        <span>Products</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'inventory:category_list' %}">
+        <i class="bi bi-tags"></i>
+        <span>Categories</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'inventory:brand_list' %}">
+        <i class="bi bi-award"></i>
+        <span>Brands</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'inventory:manufacturer_list' %}">
+        <i class="bi bi-building"></i>
+        <span>Manufacturers</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'inventory:supplier_list' %}">
+        <i class="bi bi-truck"></i>
+        <span>Suppliers</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'inventory:barcode_bulk_select' %}">
+        <i class="bi bi-upc-scan"></i>
+        <span>Print Barcodes</span>
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.is_owner %}
+    <li class="nav-heading">Business</li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'dashboard:index' %}">
+        <i class="bi bi-graph-up"></i>
+        <span>Business Overview</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'inventory:product_list' %}">
+        <i class="bi bi-box-seam"></i>
+        <span>Products</span>
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.is_cashier %}
+    <li class="nav-heading">Sales</li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="#">
+        <i class="bi bi-cash-coin"></i>
+        <span>POS</span>
+      </a>
+    </li>
+    {% endif %}
+
+    {% if request.user.is_accounting_incharge %}
+    <li class="nav-heading">Accounting</li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="#">
+        <i class="bi bi-calculator"></i>
+        <span>Accounting</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'inventory:product_list' %}">
+        <i class="bi bi-box-seam"></i>
+        <span>Products</span>
+      </a>
+    </li>
+    {% endif %}
+
+    <li class="nav-heading">Account</li>
+
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.view_name == 'accounts:profile' %}{% else %}collapsed{% endif %}" href="{% url 'accounts:profile' %}">
+        <i class="bi bi-person"></i>
+        <span>Profile</span>
+      </a>
+    </li><!-- End Profile Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.view_name == 'accounts:change_password' %}{% else %}collapsed{% endif %}" href="{% url 'accounts:change_password' %}">
+        <i class="bi bi-shield-lock"></i>
+        <span>Change Password</span>
+      </a>
+    </li><!-- End Change Password Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'accounts:logout' %}">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Logout</span>
+      </a>
+    </li><!-- End Logout Nav -->
+
+  </ul>
+
+</aside><!-- End Sidebar-->

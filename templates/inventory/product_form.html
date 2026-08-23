@@ -1,0 +1,263 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% if is_edit %}Edit Product{% else %}Add Product{% endif %}{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+{% block breadcrumb %}{% if is_edit %}Edit Product{% else %}Add Product{% endif %}{% endblock %}
+
+{% block content %}
+
+{% if possible_duplicates %}
+<div class="alert alert-warning">
+  <h6><i class="bi bi-exclamation-triangle"></i> Possible duplicate product found</h6>
+  <p class="mb-2">These existing products look similar to what you're entering. Please review before saving another record.</p>
+  <ul class="mb-2">
+    {% for dup in possible_duplicates %}
+    <li>
+      <a href="{% url 'inventory:product_detail' dup.pk %}" target="_blank">{{ dup.name }}</a>
+      — SKU: <code>{{ dup.sku }}</code>
+      {% if dup.brand %} — Brand: {{ dup.brand.name }}{% endif %}
+      {% if dup.size %} — Size: {{ dup.size }}{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  <button type="button" class="btn btn-sm btn-warning" id="saveAnywayBtn">Save Anyway</button>
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" id="product-form">
+  {% csrf_token %}
+  <input type="hidden" name="confirm_duplicate" id="confirmDuplicateInput" value="">
+
+  <div class="card">
+    <div class="card-body pt-3">
+
+      <ul class="nav nav-tabs nav-tabs-bordered">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-basic">Basic Info</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-identifiers">Identifiers</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-physical">Physical</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-compat">Compatibility</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-specs">Specifications</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-pricing">Pricing</button></li>
+      </ul>
+
+      <div class="tab-content pt-3">
+
+        <!-- Basic Info -->
+        <div class="tab-pane fade show active" id="tab-basic">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Product Name</label>
+              {{ form.name }}
+              {% for e in form.name.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Category</label>
+              {{ form.category }}
+              {% for e in form.category.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Short Description</label>
+              {{ form.short_description }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              {{ form.description }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Brand</label>
+              {{ form.brand }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Manufacturer</label>
+              {{ form.manufacturer }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Made By</label>
+              {{ form.made_by }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Country of Origin</label>
+              {{ form.country_of_origin }}
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check">
+                {{ form.is_active }}
+                <label class="form-check-label">Active</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Identifiers -->
+        <div class="tab-pane fade" id="tab-identifiers">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">SKU</label>
+              {{ form.sku }}
+              <div class="form-text">{{ form.sku.help_text }}</div>
+              {% for e in form.sku.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Barcode Number</label>
+              {{ form.barcode_number }}
+              <div class="form-text">{{ form.barcode_number.help_text }}</div>
+              {% for e in form.barcode_number.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Model Number</label>
+              {{ form.model_number }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Part Number</label>
+              {{ form.part_number }}
+              {% for e in form.part_number.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">OEM Number</label>
+              {{ form.oem_number }}
+              {% for e in form.oem_number.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Alternate Part Number</label>
+              {{ form.alternate_part_number }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Supplier Part Number</label>
+              {{ form.supplier_part_number }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Physical -->
+        <div class="tab-pane fade" id="tab-physical">
+          <div class="row g-3">
+            <div class="col-md-3"><label class="form-label">Color</label>{{ form.color }}</div>
+            <div class="col-md-3"><label class="form-label">Material</label>{{ form.material }}</div>
+            <div class="col-md-3"><label class="form-label">Finish</label>{{ form.finish }}</div>
+            <div class="col-md-3"><label class="form-label">Size</label>{{ form.size }}</div>
+            <div class="col-md-2"><label class="form-label">Length (mm)</label>{{ form.length }}</div>
+            <div class="col-md-2"><label class="form-label">Width (mm)</label>{{ form.width }}</div>
+            <div class="col-md-2"><label class="form-label">Height (mm)</label>{{ form.height }}</div>
+            <div class="col-md-2"><label class="form-label">Diameter (mm)</label>{{ form.diameter }}</div>
+            <div class="col-md-2"><label class="form-label">Thickness (mm)</label>{{ form.thickness }}</div>
+            <div class="col-md-2"><label class="form-label">Weight</label>{{ form.weight }}</div>
+            <div class="col-md-3"><label class="form-label">Unit of Measurement</label>{{ form.unit_of_measurement }}</div>
+            <div class="col-md-5"><label class="form-label">Packaging Type</label>{{ form.packaging_type }}</div>
+            <div class="col-md-4"><label class="form-label">Quantity per Package</label>{{ form.quantity_per_package }}</div>
+          </div>
+        </div>
+
+        <!-- Compatibility -->
+        <div class="tab-pane fade" id="tab-compat">
+          <p class="text-muted small">List each vehicle this part is compatible with. Leave a row blank to skip it.</p>
+          {{ compat_formset.management_form }}
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+              <thead>
+                <tr>
+                  <th>Vehicle Type</th><th>Brand</th><th>Model</th><th>Year From</th><th>Year To</th>
+                  <th>Engine Code</th><th>Fuel</th><th>Transmission</th><th>Drive</th><th>Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cform in compat_formset %}
+                <tr>
+                  <td>{{ cform.id }}{{ cform.vehicle_type }}</td>
+                  <td>{{ cform.vehicle_brand }}</td>
+                  <td>{{ cform.vehicle_model }}</td>
+                  <td>{{ cform.year_from }}</td>
+                  <td>{{ cform.year_to }}</td>
+                  <td>{{ cform.engine_code }}</td>
+                  <td>{{ cform.fuel_type }}</td>
+                  <td>{{ cform.transmission_type }}</td>
+                  <td>{{ cform.drive_type }}</td>
+                  <td class="text-center">{% if cform.instance.pk %}{{ cform.DELETE }}{% endif %}</td>
+                </tr>
+                {% for field in cform %}{% for e in field.errors %}
+                <tr><td colspan="10" class="text-danger small">{{ field.label }}: {{ e }}</td></tr>
+                {% endfor %}{% endfor %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Specifications -->
+        <div class="tab-pane fade" id="tab-specs">
+          <p class="text-muted small">Add category-specific specifications (thread size, voltage, viscosity grade, etc.). Pick an attribute and enter its value.</p>
+          {{ attr_formset.management_form }}
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+              <thead><tr><th style="width: 40%">Attribute</th><th>Value</th><th style="width: 10%">Remove</th></tr></thead>
+              <tbody>
+                {% for aform in attr_formset %}
+                <tr>
+                  <td>{{ aform.id }}{{ aform.attribute }}
+                    {% for e in aform.attribute.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                  </td>
+                  <td>{{ aform.value }}
+                    {% for e in aform.value.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                  </td>
+                  <td class="text-center">{% if aform.instance.pk %}{{ aform.DELETE }}{% endif %}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="tab-pane fade" id="tab-pricing">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Cost Price</label>
+              {{ form.cost_price }}
+              {% for e in form.cost_price.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-3"><label class="form-label">Wholesale Price</label>{{ form.wholesale_price }}</div>
+            <div class="col-md-3"><label class="form-label">Retail Price</label>{{ form.retail_price }}</div>
+            <div class="col-md-3"><label class="form-label">Suggested Retail Price</label>{{ form.suggested_retail_price }}</div>
+            <div class="col-md-3">
+              <label class="form-label">Selling Price</label>
+              {{ form.selling_price }}
+              {% for e in form.selling_price.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-3"><label class="form-label">Discounted Price</label>{{ form.discounted_price }}</div>
+            <div class="col-md-3">
+              <label class="form-label">Minimum Selling Price</label>
+              {{ form.minimum_selling_price }}
+              {% for e in form.minimum_selling_price.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-3"><label class="form-label">Reorder Level</label>{{ form.reorder_level }}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">{% if is_edit %}Save Changes{% else %}Create Product{% endif %}</button>
+    <a href="{% url 'inventory:product_list' %}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+
+{% if is_edit and product %}
+<div class="card mt-4">
+  <div class="card-body">
+    <h5 class="card-title">Images</h5>
+    <p class="text-muted small">Manage product images from the <a href="{% url 'inventory:product_detail' product.pk %}">product detail page</a>.</p>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('saveAnywayBtn')?.addEventListener('click', function () {
+    document.getElementById('confirmDuplicateInput').value = '1';
+    document.getElementById('product-form').submit();
+  });
+</script>
+{% endblock %}
