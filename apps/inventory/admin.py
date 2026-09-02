@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     Brand,
     Category,
+    InventoryActivityLog,
     Manufacturer,
     Product,
     ProductAttribute,
@@ -77,3 +78,23 @@ class ProductAttributeAdmin(admin.ModelAdmin):
 class ProductPriceHistoryAdmin(admin.ModelAdmin):
     list_display = ["product", "field_name", "old_price", "new_price", "changed_by", "changed_at"]
     list_filter = ["field_name"]
+
+
+@admin.register(InventoryActivityLog)
+class InventoryActivityLogAdmin(admin.ModelAdmin):
+    """Read-only in the Django admin — this is an audit trail, not editable
+    data. No add/change/delete, even for superusers."""
+
+    list_display = ["created_at", "user", "action", "product_name_snapshot", "sku_snapshot", "quantity_changed"]
+    list_filter = ["action"]
+    search_fields = ["product_name_snapshot", "sku_snapshot", "barcode_snapshot"]
+    date_hierarchy = "created_at"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

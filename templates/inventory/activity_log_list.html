@@ -1,0 +1,262 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Inventory Activity Logs{% endblock %}
+{% block page_title %}Inventory Activity Logs{% endblock %}
+{% block breadcrumb %}Activity Logs{% endblock %}
+
+{% block content %}
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h5 class="card-title mb-1">Inventory Activity Logs</h5>
+        <div class="text-muted small">
+          Period: <strong>{{ period_label }}</strong>
+          {% if selected_user_obj %} · Inventory User: <strong>{{ selected_user_obj.get_full_name|default:selected_user_obj.username }}</strong>{% endif %}
+          {% if selected_action %} · Action: <strong>{{ selected_action_label }}</strong>{% endif %}
+          {% if query %} · Product: <strong>{{ query }}</strong>{% endif %}
+          · Results: <strong>{{ results_count }}</strong> activities
+        </div>
+      </div>
+      <a href="{% url 'inventory:product_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-box-seam"></i> Back to Products
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row">
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h6 class="card-title">Total Activities</h6>
+        <h4 class="mb-0">{{ stats.total_activities }}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h6 class="card-title">Products Added</h6>
+        <h4 class="mb-0">{{ stats.products_added }}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h6 class="card-title">Products Updated</h6>
+        <h4 class="mb-0">{{ stats.products_updated }}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h6 class="card-title">Stock Received</h6>
+        <h4 class="mb-0">{{ stats.stock_received }}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h6 class="card-title">Stock Adjustments</h6>
+        <h4 class="mb-0">{{ stats.stock_adjustments }}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h6 class="card-title">Shipments Received</h6>
+        <h4 class="mb-0">{{ stats.shipments_received }}</h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Filter Buttons -->
+<div class="card">
+  <div class="card-body">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <a href="?quick=today" class="btn btn-sm {% if period_mode == 'today' %}btn-primary{% else %}btn-outline-primary{% endif %}">Today</a>
+      <a href="?quick=yesterday" class="btn btn-sm {% if period_mode == 'yesterday' %}btn-primary{% else %}btn-outline-primary{% endif %}">Yesterday</a>
+      <a href="?quick=this_week" class="btn btn-sm {% if period_mode == 'this_week' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Week</a>
+      <a href="?quick=last_week" class="btn btn-sm {% if period_mode == 'last_week' %}btn-primary{% else %}btn-outline-primary{% endif %}">Last Week</a>
+      <a href="?quick=this_month" class="btn btn-sm {% if period_mode == 'this_month' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Month</a>
+      <a href="?quick=last_month" class="btn btn-sm {% if period_mode == 'last_month' %}btn-primary{% else %}btn-outline-primary{% endif %}">Last Month</a>
+      <a href="?quick=this_year" class="btn btn-sm {% if period_mode == 'this_year' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Year</a>
+      <a href="{% url 'inventory:activity_log_list' %}" class="btn btn-sm btn-outline-secondary">All Time</a>
+    </div>
+
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Custom Date From</label>
+        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Custom Date To</label>
+        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Month</label>
+        <select name="month" class="form-select form-select-sm">
+          <option value="">—</option>
+          {% for value, label in months %}
+          <option value="{{ value }}" {% if selected_month == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-1">
+        <label class="form-label small mb-1">Year</label>
+        <select name="year" class="form-select form-select-sm">
+          <option value="">—</option>
+          {% for y in years %}
+          <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Inventory In-Charge</label>
+        <select name="user" class="form-select form-select-sm">
+          <option value="">All Inventory Users</option>
+          {% for u in inventory_users %}
+          <option value="{{ u.pk }}" {% if selected_user == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Action</label>
+        <select name="action" class="form-select form-select-sm">
+          <option value="">All Actions</option>
+          {% for value, label in actions %}
+          <option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small mb-1">Product (name, SKU, barcode, part/OEM #)</label>
+        <input type="text" name="q" class="form-control form-control-sm" value="{{ query }}" placeholder="Search product...">
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-funnel"></i> Apply Filters</button>
+        <a href="{% url 'inventory:activity_log_list' %}" class="btn btn-sm btn-outline-secondary w-100">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Inventory User Activity Summary -->
+{% if user_summary %}
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Inventory User Activity Summary</h5>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped">
+        <thead>
+          <tr>
+            <th>Inventory In-Charge</th>
+            <th class="text-end">Products Added</th>
+            <th class="text-end">Stock Received</th>
+            <th class="text-end">Adjustments</th>
+            <th class="text-end">Total Activities</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in user_summary %}
+          <tr>
+            <td>{{ row.user__first_name }} {{ row.user__last_name }}{% if not row.user__first_name %}{{ row.user__username }}{% endif %}</td>
+            <td class="text-end">{{ row.products_added }}</td>
+            <td class="text-end">{{ row.stock_received }}</td>
+            <td class="text-end">{{ row.adjustments }}</td>
+            <td class="text-end fw-bold">{{ row.total_activities }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Activity Log Table -->
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Activity Records</h5>
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Barcode</th>
+            <th class="text-end">Quantity</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in page_obj %}
+          <tr>
+            <td class="text-nowrap">
+              {{ log.effective_date|date:"M j, Y" }}
+              {% if log.activity_date %}
+              <br><span class="text-muted small">Logged {{ log.created_at|date:"M j, Y g:i A" }}</span>
+              {% else %}
+              <br><span class="text-muted small">{{ log.created_at|date:"g:i A" }}</span>
+              {% endif %}
+            </td>
+            <td>{{ log.user.get_full_name|default:log.user.username|default:"—" }}</td>
+            <td><span class="badge bg-primary">{{ log.get_action_display }}</span></td>
+            <td>
+              {% if log.product %}
+              <a href="{% url 'inventory:product_detail' log.product.pk %}">{{ log.product_name_snapshot }}</a>
+              {% else %}
+              {{ log.product_name_snapshot|default:"—" }}
+              {% endif %}
+            </td>
+            <td><code>{{ log.sku_snapshot|default:"—" }}</code></td>
+            <td>{{ log.barcode_snapshot|default:"—" }}</td>
+            <td class="text-end">
+              {% if log.quantity_changed is not None %}
+              {% if log.quantity_changed > 0 %}<span class="text-success">+{{ log.quantity_changed }}</span>
+              {% else %}<span class="text-danger">{{ log.quantity_changed }}</span>{% endif %}
+              {% else %}—{% endif %}
+            </td>
+            <td class="small">
+              {% if log.field_name %}
+              <strong>{{ log.field_name }}</strong>: {{ log.previous_value|default:"—" }} → {{ log.new_value|default:"—" }}
+              {% elif log.remarks %}
+              {{ log.remarks }}
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4">No activity logs found for the selected filters.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav>
+      <ul class="pagination pagination-sm">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

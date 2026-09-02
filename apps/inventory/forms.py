@@ -1,3 +1,5 @@
+import datetime
+
 from django import forms
 from django.forms import inlineformset_factory
 
@@ -8,7 +10,6 @@ from .models import (
     Product,
     ProductAttributeValue,
     ProductCompatibility,
-    ProductImage,
     Supplier,
 )
 from .services import generate_sku
@@ -101,6 +102,15 @@ _NUMBER_FIELDS = [
     "minimum_selling_price", "reorder_level",
 ]
 
+# Fields the model actually requires (blank=False). Listed explicitly here
+# because Django is inconsistent about which of these get an HTML `required`
+# attribute automatically (Select widgets in particular often don't), so we
+# force it on every one of them for a consistent, strict client-side hint —
+# the real enforcement is still server-side via full_clean().
+REQUIRED_PRODUCT_FIELDS = [
+    "name", "category", "unit_of_measurement", "cost_price", "selling_price", "reorder_level",
+]
+
 
 class ProductForm(forms.ModelForm):
     sku = forms.CharField(
@@ -135,6 +145,8 @@ class ProductForm(forms.ModelForm):
             self.fields[field_name].widget.attrs.setdefault("class", INPUT_CLASS)
         for field_name in _NUMBER_FIELDS:
             self.fields[field_name].widget.attrs.setdefault("class", INPUT_CLASS)
+        for field_name in REQUIRED_PRODUCT_FIELDS:
+            self.fields[field_name].widget.attrs["required"] = "required"
         self.fields["category"].queryset = Category.objects.filter(is_active=True)
         self.fields["brand"].queryset = Brand.objects.filter(is_active=True)
         self.fields["manufacturer"].queryset = Manufacturer.objects.filter(is_active=True)
@@ -163,6 +175,30 @@ class ProductImageForm(forms.Form):
         image = self.cleaned_data["image"]
         validate_image_file(image)
         return image
+
+
+class StockAddForm(forms.Form):
+    quantity = forms.IntegerField(
+        min_value=1,
+        label="Quantity to Add",
+        widget=forms.NumberInput(attrs={"class": INPUT_CLASS, "min": 1}),
+    )
+    date_added = forms.DateField(
+        label="Date Added",
+        widget=forms.DateInput(attrs={"class": INPUT_CLASS, "type": "date"}),
+        help_text="The date this stock was actually received — defaults to today, but can be backdated.",
+    )
+    remarks = forms.CharField(
+        required=False,
+        label="Remarks",
+        widget=forms.Textarea(attrs={"class": INPUT_CLASS, "rows": 2}),
+    )
+
+    def clean_date_added(self):
+        value = self.cleaned_data["date_added"]
+        if value > datetime.date.today():
+            raise forms.ValidationError("Date added cannot be in the future.")
+        return value
 
 
 ProductCompatibilityFormSet = inlineformset_factory(

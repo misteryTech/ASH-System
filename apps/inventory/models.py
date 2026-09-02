@@ -210,8 +210,10 @@ class Product(TimeStampedModel):
     discounted_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)])
     minimum_selling_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)])
 
-    # --- Stock control (batches/movements are Milestone 2; the threshold lives
-    # here now so the model doesn't need another migration for it later) ---
+    # --- Stock control (full batch/FIFO tracking is Milestone 2; this is a
+    # single running total, only ever changed through services.add_stock()
+    # so every change gets a dated, logged InventoryActivityLog row) ---
+    quantity_on_hand = models.PositiveIntegerField(default=0)
     reorder_level = models.PositiveIntegerField(default=0)
 
     is_active = models.BooleanField(default=True)
@@ -383,3 +385,86 @@ class ProductPriceHistory(models.Model):
 
     def __str__(self):
         return f"{self.product.sku}: {self.field_name} {self.old_price} -> {self.new_price}"
+
+
+class InventoryActivityLog(models.Model):
+    """Immutable audit trail of inventory activity. Rows are only ever
+    created (via services.record_activity / record_product_field_changes),
+    never updated or deleted — see apps/inventory/admin.py, which locks the
+    Django admin down to read-only for this model, and apps/inventory/views.py,
+    which exposes no edit/delete endpoints for it.
+
+    Shipment/Batch/FIFO action types are defined now so no migration is
+    needed when that module (Milestone 2) is built, but they are not fired
+    by any code path yet since those models do not exist.
+    """
+
+    class Action(models.TextChoices):
+        PRODUCT_CREATED = "PRODUCT_CREATED", "Product Created"
+        PRODUCT_UPDATED = "PRODUCT_UPDATED", "Product Updated"
+        PRODUCT_DEACTIVATED = "PRODUCT_DEACTIVATED", "Product Deactivated"
+        STOCK_RECEIVED = "STOCK_RECEIVED", "Stock Received"
+        STOCK_ADDED = "STOCK_ADDED", "Stock Added"
+        STOCK_DEDUCTED = "STOCK_DEDUCTED", "Stock Deducted"
+        STOCK_ADJUSTED = "STOCK_ADJUSTED", "Stock Adjusted"
+        SHIPMENT_CREATED = "SHIPMENT_CREATED", "Shipment Created"
+        SHIPMENT_RECEIVED = "SHIPMENT_RECEIVED", "Shipment Received"
+        BATCH_CREATED = "BATCH_CREATED", "Batch Created"
+        STOCK_RETURNED = "STOCK_RETURNED", "Stock Returned"
+        STOCK_DAMAGED = "STOCK_DAMAGED", "Stock Damaged"
+        STOCK_EXPIRED = "STOCK_EXPIRED", "Stock Expired"
+        BARCODE_GENERATED = "BARCODE_GENERATED", "Barcode Generated"
+        BARCODE_PRINTED = "BARCODE_PRINTED", "Barcode Printed"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="inventory_activity_logs"
+    )
+    action = models.CharField(max_length=30, choices=Action.choices)
+
+    product = models.ForeignKey(
+        Product, on_delete=models.SET_NULL, null=True, blank=True, related_name="activity_logs"
+    )
+    # Snapshotted so the log still reads correctly even if the product is
+    # later renamed, re-SKU'd, or deleted.
+    product_name_snapshot = models.CharField(max_length=200, blank=True)
+    sku_snapshot = models.CharField(max_length=64, blank=True)
+    barcode_snapshot = models.CharField(max_length=64, blank=True)
+
+    quantity_before = models.IntegerField(null=True, blank=True)
+    quantity_changed = models.IntegerField(null=True, blank=True)
+    quantity_after = models.IntegerField(null=True, blank=True)
+
+    # The business date the activity pertains to (e.g. the date stock was
+    # actually received, which may be entered a day or two after the fact) —
+    # distinct from created_at below, which is the immutable system
+    # timestamp of when this audit row was written. Left null for actions
+    # with no meaningful business date (product create/update, barcode
+    # printing); the log list view falls back to created_at's date for those.
+    activity_date = models.DateField(null=True, blank=True)
+
+    # Loose text linkage rather than hard FKs, since Batch/Shipment models
+    # don't exist yet — see the class docstring.
+    reference_type = models.CharField(max_length=30, blank=True)
+    reference_id = models.CharField(max_length=100, blank=True)
+
+    field_name = models.CharField(max_length=50, blank=True)
+    previous_value = models.CharField(max_length=255, blank=True)
+    new_value = models.CharField(max_length=255, blank=True)
+
+    remarks = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["action"]),
+            models.Index(fields=["user"]),
+            models.Index(fields=["product"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["activity_date"]),
+        ]
+
+    def __str__(self):
+        label = self.product_name_snapshot or self.sku_snapshot or "—"
+        return f"{self.get_action_display()} — {label} @ {self.created_at:%Y-%m-%d %H:%M}"

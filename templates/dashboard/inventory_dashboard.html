@@ -7,19 +7,213 @@
 <div class="row">
   <div class="col-12">
     <div class="alert alert-primary">
-      Welcome back, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>. This is your inventory dashboard.
+      Welcome back, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>. Here is a summary of the product catalog.
     </div>
   </div>
+</div>
+
+<div class="row">
+
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Total Products</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10">
+            <i class="bi bi-box-seam text-primary" style="font-size: 1.6rem;"></i>
+          </div>
+          <div class="ps-3"><h6>{{ total_products }}</h6></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Categories</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-info bg-opacity-10">
+            <i class="bi bi-tags text-info" style="font-size: 1.6rem;"></i>
+          </div>
+          <div class="ps-3"><h6>{{ total_categories }}</h6></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Brands</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning bg-opacity-10">
+            <i class="bi bi-award text-warning" style="font-size: 1.6rem;"></i>
+          </div>
+          <div class="ps-3"><h6>{{ total_brands }}</h6></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Manufacturers</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-secondary bg-opacity-10">
+            <i class="bi bi-building text-secondary" style="font-size: 1.6rem;"></i>
+          </div>
+          <div class="ps-3"><h6>{{ total_manufacturers }}</h6></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Stock on Hand</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success bg-opacity-10">
+            <i class="bi bi-boxes text-success" style="font-size: 1.6rem;"></i>
+          </div>
+          <div class="ps-3"><h6>{{ total_stock_on_hand }}</h6></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-2 col-md-4">
+    <div class="card info-card">
+      <div class="card-body">
+        <h5 class="card-title">Low Stock</h5>
+        <div class="d-flex align-items-center">
+          <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-danger bg-opacity-10">
+            <i class="bi bi-exclamation-triangle text-danger" style="font-size: 1.6rem;"></i>
+          </div>
+          <div class="ps-3"><h6>{{ low_stock_count }}</h6></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="row">
   <div class="col-12">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-box-seam"></i> Inventory Module</h5>
-        <p class="text-muted mb-0">Product and stock management will be available in Phase 2.</p>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="card-title mb-0">Recently Added Products</h5>
+          <a href="{% url 'inventory:product_create' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Add Product</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Category</th>
+                <th>Brand</th>
+                <th>Manufacturer</th>
+                <th class="text-end">Stock</th>
+                <th>Added</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in recent_products %}
+              <tr>
+                <td><a href="{% url 'inventory:product_detail' product.pk %}">{{ product.name }}</a></td>
+                <td><code>{{ product.sku }}</code></td>
+                <td>{{ product.category.name }}</td>
+                <td>{{ product.brand.name|default:"—" }}</td>
+                <td>{{ product.manufacturer.name|default:"—" }}</td>
+                <td class="text-end">{{ product.quantity_on_hand }}</td>
+                <td class="text-muted small">{{ product.created_at|date:"M j, Y" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="7" class="text-center text-muted py-3">No products added yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <a href="{% url 'inventory:product_list' %}" class="btn btn-sm btn-outline-secondary">View All Products</a>
       </div>
     </div>
   </div>
+</div>
+
+<div class="row">
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="card-title mb-0">Products by Category</h5>
+          <a href="{% url 'inventory:category_list' %}" class="btn btn-sm btn-outline-secondary">Manage</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped">
+            <thead><tr><th>Category</th><th class="text-end">Products</th></tr></thead>
+            <tbody>
+              {% for cat in products_by_category %}
+              <tr><td>{{ cat.name }}</td><td class="text-end">{{ cat.product_count }}</td></tr>
+              {% empty %}
+              <tr><td colspan="2" class="text-center text-muted py-3">No categories yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="card-title mb-0">Products by Brand</h5>
+          <a href="{% url 'inventory:brand_list' %}" class="btn btn-sm btn-outline-secondary">Manage</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped">
+            <thead><tr><th>Brand</th><th class="text-end">Products</th></tr></thead>
+            <tbody>
+              {% for brand in products_by_brand %}
+              <tr><td>{{ brand.name }}</td><td class="text-end">{{ brand.product_count }}</td></tr>
+              {% empty %}
+              <tr><td colspan="2" class="text-center text-muted py-3">No brands yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="card-title mb-0">Products by Manufacturer</h5>
+          <a href="{% url 'inventory:manufacturer_list' %}" class="btn btn-sm btn-outline-secondary">Manage</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped">
+            <thead><tr><th>Manufacturer</th><th class="text-end">Products</th></tr></thead>
+            <tbody>
+              {% for manu in products_by_manufacturer %}
+              <tr><td>{{ manu.name }}</td><td class="text-end">{{ manu.product_count }}</td></tr>
+              {% empty %}
+              <tr><td colspan="2" class="text-center text-muted py-3">No manufacturers yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

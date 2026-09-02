@@ -4,6 +4,21 @@
 {% block page_title %}Inventory{% endblock %}
 {% block breadcrumb %}{% if is_edit %}Edit Product{% else %}Add Product{% endif %}{% endblock %}
 
+{% block extra_css %}
+<style>
+  .nav-tabs .nav-link.has-error {
+    color: #dc3545;
+    border-color: #dc3545 #dc3545 #fff;
+  }
+  .nav-tabs .nav-link.has-error::after {
+    content: "\2022";
+    color: #dc3545;
+    font-weight: bold;
+    margin-left: 4px;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 
 {% if possible_duplicates %}
@@ -32,12 +47,12 @@
     <div class="card-body pt-3">
 
       <ul class="nav nav-tabs nav-tabs-bordered">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-basic">Basic Info</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-identifiers">Identifiers</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-physical">Physical</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-compat">Compatibility</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-specs">Specifications</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-pricing">Pricing</button></li>
+        <li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-basic">Basic Info</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-identifiers">Identifiers</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-physical">Physical</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-compat">Compatibility</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-specs">Specifications</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-pricing">Pricing</button></li>
       </ul>
 
       <div class="tab-content pt-3">
@@ -46,12 +61,12 @@
         <div class="tab-pane fade show active" id="tab-basic">
           <div class="row g-3">
             <div class="col-md-8">
-              <label class="form-label">Product Name</label>
+              <label class="form-label">Product Name <span class="text-danger">*</span></label>
               {{ form.name }}
               {% for e in form.name.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
             </div>
             <div class="col-md-4">
-              <label class="form-label">Category</label>
+              <label class="form-label">Category <span class="text-danger">*</span></label>
               {{ form.category }}
               {% for e in form.category.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
             </div>
@@ -141,7 +156,11 @@
             <div class="col-md-2"><label class="form-label">Diameter (mm)</label>{{ form.diameter }}</div>
             <div class="col-md-2"><label class="form-label">Thickness (mm)</label>{{ form.thickness }}</div>
             <div class="col-md-2"><label class="form-label">Weight</label>{{ form.weight }}</div>
-            <div class="col-md-3"><label class="form-label">Unit of Measurement</label>{{ form.unit_of_measurement }}</div>
+            <div class="col-md-3">
+              <label class="form-label">Unit of Measurement <span class="text-danger">*</span></label>
+              {{ form.unit_of_measurement }}
+              {% for e in form.unit_of_measurement.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
             <div class="col-md-5"><label class="form-label">Packaging Type</label>{{ form.packaging_type }}</div>
             <div class="col-md-4"><label class="form-label">Quantity per Package</label>{{ form.quantity_per_package }}</div>
           </div>
@@ -210,7 +229,7 @@
         <div class="tab-pane fade" id="tab-pricing">
           <div class="row g-3">
             <div class="col-md-3">
-              <label class="form-label">Cost Price</label>
+              <label class="form-label">Cost Price <span class="text-danger">*</span></label>
               {{ form.cost_price }}
               {% for e in form.cost_price.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
             </div>
@@ -218,7 +237,7 @@
             <div class="col-md-3"><label class="form-label">Retail Price</label>{{ form.retail_price }}</div>
             <div class="col-md-3"><label class="form-label">Suggested Retail Price</label>{{ form.suggested_retail_price }}</div>
             <div class="col-md-3">
-              <label class="form-label">Selling Price</label>
+              <label class="form-label">Selling Price <span class="text-danger">*</span></label>
               {{ form.selling_price }}
               {% for e in form.selling_price.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
             </div>
@@ -228,7 +247,11 @@
               {{ form.minimum_selling_price }}
               {% for e in form.minimum_selling_price.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
             </div>
-            <div class="col-md-3"><label class="form-label">Reorder Level</label>{{ form.reorder_level }}</div>
+            <div class="col-md-3">
+              <label class="form-label">Reorder Level <span class="text-danger">*</span></label>
+              {{ form.reorder_level }}
+              {% for e in form.reorder_level.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
           </div>
         </div>
 
@@ -258,6 +281,27 @@
   document.getElementById('saveAnywayBtn')?.addEventListener('click', function () {
     document.getElementById('confirmDuplicateInput').value = '1';
     document.getElementById('product-form').submit();
+  });
+
+  // Validation errors can land on a tab that isn't currently open — Bootstrap
+  // hides inactive tab-panes, so a field error there is invisible unless the
+  // user happens to click through every tab. Mark any tab with an error and
+  // jump straight to the first one so nothing gets missed.
+  document.addEventListener('DOMContentLoaded', function () {
+    let firstErrorTabButton = null;
+    document.querySelectorAll('#product-form .tab-pane').forEach(function (pane) {
+      const hasError = pane.querySelector('.text-danger, .is-invalid');
+      if (!hasError) return;
+      const tabButton = document.querySelector('[data-bs-target="#' + pane.id + '"]');
+      if (!tabButton) return;
+      tabButton.classList.add('has-error');
+      if (!firstErrorTabButton) {
+        firstErrorTabButton = tabButton;
+      }
+    });
+    if (firstErrorTabButton && !firstErrorTabButton.classList.contains('active')) {
+      new bootstrap.Tab(firstErrorTabButton).show();
+    }
   });
 </script>
 {% endblock %}

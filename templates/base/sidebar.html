@@ -18,6 +18,12 @@
         <span>User Management</span>
       </a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.view_name == 'inventory:activity_log_list' %}{% else %}collapsed{% endif %}" href="{% url 'inventory:activity_log_list' %}">
+        <i class="bi bi-clock-history"></i>
+        <span>Inventory Activity Logs</span>
+      </a>
+    </li>
     {% endif %}
 
     {% if request.user.is_administrator or request.user.is_inventory_incharge or request.user.is_superuser %}
@@ -72,6 +78,12 @@
       <a class="nav-link collapsed" href="{% url 'inventory:product_list' %}">
         <i class="bi bi-box-seam"></i>
         <span>Products</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.view_name == 'inventory:activity_log_list' %}{% else %}collapsed{% endif %}" href="{% url 'inventory:activity_log_list' %}">
+        <i class="bi bi-clock-history"></i>
+        <span>Inventory Activity Logs</span>
       </a>
     </li>
     {% endif %}

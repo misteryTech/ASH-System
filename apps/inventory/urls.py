@@ -11,6 +11,7 @@ urlpatterns = [
     path("products/create/", views.product_create, name="product_create"),
     path("products/<int:pk>/", views.product_detail, name="product_detail"),
     path("products/<int:pk>/edit/", views.product_edit, name="product_edit"),
+    path("products/<int:pk>/add-stock/", views.product_add_stock, name="product_add_stock"),
     path("products/<int:pk>/images/upload/", views.product_image_upload, name="product_image_upload"),
     path("products/<int:pk>/images/<int:image_id>/delete/", views.product_image_delete, name="product_image_delete"),
     path(
@@ -23,6 +24,8 @@ urlpatterns = [
     path("products/<int:pk>/barcode/print/", views.product_barcode_print, name="product_barcode_print"),
     path("barcodes/print/", views.barcode_bulk_select, name="barcode_bulk_select"),
     path("barcodes/print/run/", views.barcode_bulk_print, name="barcode_bulk_print"),
+    # Activity log
+    path("activity-logs/", views.activity_log_list, name="activity_log_list"),
     # Categories
     path("categories/", views.category_list, name="category_list"),
     path("categories/<int:pk>/edit/", views.category_edit, name="category_edit"),

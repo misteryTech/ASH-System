@@ -25,7 +25,10 @@
     <div class="card">
       <div class="card-body">
         <h5 class="card-title">Inventory Overview</h5>
-        <p class="text-muted mb-0">Inventory reporting will be available once the Inventory module (Phase 2) is implemented.</p>
+        <p class="text-muted mb-0">
+          <a href="{% url 'inventory:product_list' %}">Browse the product catalog</a>.
+          Stock receiving and quantity reporting will be available once the stock-operations module is implemented.
+        </p>
       </div>
     </div>
   </div>
@@ -34,6 +37,51 @@
       <div class="card-body">
         <h5 class="card-title">Accounting Overview</h5>
         <p class="text-muted mb-0">Financial reporting will be available once the Accounting module (Phase 4) is implemented.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="card-title mb-0">Recent Inventory Activity</h5>
+          <a href="{% url 'inventory:activity_log_list' %}" class="btn btn-sm btn-outline-primary">View All Inventory Activities</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Action</th>
+                <th>Product</th>
+                <th>SKU</th>
+                <th class="text-end">Quantity</th>
+                <th>Date/Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in recent_inventory_activity %}
+              <tr>
+                <td>{{ log.user.get_full_name|default:log.user.username|default:"—" }}</td>
+                <td><span class="badge bg-primary">{{ log.get_action_display }}</span></td>
+                <td>{{ log.product_name_snapshot|default:"—" }}</td>
+                <td><code>{{ log.sku_snapshot|default:"—" }}</code></td>
+                <td class="text-end">
+                  {% if log.quantity_changed is not None %}
+                  {% if log.quantity_changed > 0 %}+{{ log.quantity_changed }}{% else %}{{ log.quantity_changed }}{% endif %}
+                  {% else %}—{% endif %}
+                </td>
+                <td>{{ log.created_at|date:"M j, Y g:i A" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="text-center text-muted py-3">No inventory activity recorded yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
