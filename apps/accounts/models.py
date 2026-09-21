@@ -13,6 +13,8 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.CASHIER)
     profile_image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
+    # Session that currently owns this account; used to prevent simultaneous logins.
+    active_session_key = models.CharField(max_length=40, blank=True, default="", editable=False)
 
     REQUIRED_FIELDS = ["email", "role"]
 

@@ -59,6 +59,8 @@ def change_password_view(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
+            # The session key is rotated on password change; keep it as the active one.
+            User.objects.filter(pk=user.pk).update(active_session_key=request.session.session_key)
             messages.success(request, "Password changed successfully.")
             return redirect("accounts:profile")
         messages.error(request, "Please correct the errors below.")
