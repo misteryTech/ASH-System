@@ -9,10 +9,19 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-change-me")
 DEBUG = os.environ.get("DEBUG", "False") == "True"
+# In DEBUG the server is reachable from other devices on the network by default;
+# otherwise only localhost unless ALLOWED_HOSTS is set (comma separated).
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+    for host in os.environ.get("ALLOWED_HOSTS", "*" if DEBUG else "127.0.0.1,localhost").split(",")
     if host.strip()
+]
+
+# Needed only when the site is served over HTTPS / a domain, e.g. https://pos.example.com
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
 ]
 
 INSTALLED_APPS = [
@@ -124,8 +133,14 @@ MESSAGE_TAGS = {
 SESSION_COOKIE_AGE = 60 * 60 * 8
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
+# Secure cookies only work over HTTPS. Set USE_HTTPS=False in .env when running
+# with DEBUG=False on a plain-HTTP local network, otherwise login will not stick.
+USE_HTTPS = os.environ.get("USE_HTTPS", str(not DEBUG)) == "True"
+
 if not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+if USE_HTTPS:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
