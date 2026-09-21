@@ -23,7 +23,8 @@ def login_view(request):
             messages.success(request, f"Welcome back, {user.get_full_name() or user.username}!")
             next_url = request.POST.get("next") or request.GET.get("next")
             return redirect(next_url or "dashboard:index")
-        messages.error(request, "Invalid username/email or password.")
+        errors = form.non_field_errors()
+        messages.error(request, errors[0] if errors else "Invalid username/email or password.")
     else:
         form = LoginForm(request)
 

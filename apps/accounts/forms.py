@@ -1,4 +1,6 @@
 from django import forms
+from django.conf import settings
+from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -9,7 +11,26 @@ INPUT_CLASS = "form-control"
 SELECT_CLASS = "form-select"
 
 
-class LoginForm(AuthenticationForm):
+class SingleLoginMixin:
+    """Refuse a login while the account is in use by another live session."""
+
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+        current_key = self.request.session.session_key if self.request else None
+        if user.has_other_active_session(current_key):
+            raise ValidationError(
+                "This account is already logged in on another device. Log out there first, "
+                "or try again after %(minutes)d minutes of inactivity.",
+                code="already_logged_in",
+                params={"minutes": settings.SINGLE_LOGIN_IDLE_MINUTES},
+            )
+
+
+class AdminLoginForm(SingleLoginMixin, AdminAuthenticationForm):
+    pass
+
+
+class LoginForm(SingleLoginMixin, AuthenticationForm):
     username = forms.CharField(
         label="Username or Email",
         widget=forms.TextInput(

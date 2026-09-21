@@ -134,6 +134,11 @@ MESSAGE_TAGS = {
 SESSION_COOKIE_AGE = 60 * 60 * 8
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
+# An account can only be logged in on one device at a time. A second login is refused
+# while the first session was active within this many minutes; after that the account
+# is considered abandoned (e.g. browser closed without logging out) and can log in again.
+SINGLE_LOGIN_IDLE_MINUTES = int(os.environ.get("SINGLE_LOGIN_IDLE_MINUTES", "10"))
+
 # Secure cookies only work over HTTPS. Set USE_HTTPS=False in .env when running
 # with DEBUG=False on a plain-HTTP local network, otherwise login will not stick.
 USE_HTTPS = os.environ.get("USE_HTTPS", str(not DEBUG)) == "True"
